@@ -1,0 +1,164 @@
+name: Secure RDP via Tailscale (Automated Loop) - TURBO EDITION
+
+on:
+  workflow_dispatch:
+    inputs:
+      gh_api_token:
+        description: "🔒 ToolboxLap | ENTER YOUR GITHUB PAT HERE (Starts with ghp_...)"
+        required: true
+        default: ""
+      loops:
+        description: "🔄 System Internal Counter (Leave Empty - Managed Automatically)"
+        required: false
+        default: ""
+
+concurrency:
+  group: rdp-loop-singleton
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  secure-rdp-turbo:
+    runs-on: windows-2025
+    timeout-minutes: 420
+    steps:
+      - name: 🚀 Turbo Core Engine - Parallel Execution
+        run: |
+          $token = "${{ github.event.inputs.gh_api_token }}"
+          if (-not $token -or -not ($token -match '^ghp_[a-zA-Z0-9]+$')) {
+              Write-Error "❌ Invalid Token!"
+              exit 1
+          }
+
+          # Protected Branding & Dynamic Injector (Optimized)
+          $u_enc = "VE9PTEJPWExBUA=="
+          $p_enc = "YWRtaW5AMTIz"
+          $w_enc = "aHR0cHM6Ly93d3cudG9vbGJveGxhcC5jb20="
+          $y_enc = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vQFRPT0xCT1hMQVAtdTFj"
+          
+          $u = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($u_enc))
+          $p = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($p_enc))
+          $w = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($w_enc))
+          $y = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($y_enc))
+
+          # Anti-Tamper Hard Verification (Reduced Overhead)
+          if ($u -ne "TOOLBOXLAP" -or $w -notlike "*toolboxlap*") {
+              Write-Error "🔒 Security Violation!"
+              exit 1
+          }
+
+          # Fast Summary Injection (Parallel Write)
+          $summaryContent = @"
+          # 🚀 TOOLBOXLAP TURBO RDP
+          ### 🔒 Copyright © 2026 ToolboxLap.com
+          ### 🔗 [$w]($w/) | 📺 [$y]($y)
+          ---
+          "@
+          $summaryContent | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+
+          # Turbo System Optimization - Registry Tweaks
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl" -Name "Win32PrioritySeparation" -Value 38 -Type DWord -Force
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "LargeSystemCache" -Value 1 -Type DWord -Force
+          Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Type DWord -Force
+          powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+
+          # RDP Config - Parallel Registry Modifications
+          $regParams = @{
+              "HKLM:\System\CurrentControlSet\Control\Terminal Server" = @{ "fDenyTSConnections" = 0 }
+              "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" = @{ "UserAuthentication" = 0; "SecurityLayer" = 0 }
+          }
+          foreach ($path in $regParams.Keys) {
+              foreach ($kv in $regParams[$path].GetEnumerator()) {
+                  Set-ItemProperty -Path $path -Name $kv.Key -Value $kv.Value -Force
+              }
+          }
+
+          # Firewall - Batch Delete & Add (Faster)
+          netsh advfirewall firewall delete rule name="RDP-Tailscale" | Out-Null
+          netsh advfirewall firewall add rule name="RDP-Tailscale" dir=in action=allow protocol=TCP localport=3389 | Out-Null
+          Restart-Service -Name TermService -Force
+
+          # Local User Creation - Optimized (net user command)
+          $securePass = ConvertTo-SecureString $p -AsPlainText -Force
+          $userExists = Get-LocalUser -Name $u -ErrorAction SilentlyContinue
+          if (-not $userExists) {
+              net user $u $p /add /expires:never /passwordchg:no
+              net localgroup Administrators $u /add
+              net localgroup "Remote Desktop Users" $u /add
+          }
+
+          # Parallel Tailscale Download & Install
+          $tsUrl = "https://pkgs.tailscale.com/stable/tailscale-setup-1.82.0-amd64.msi"
+          $job = Start-Job -ScriptBlock {
+              param($url, $out)
+              Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+          } -ArgumentList $tsUrl, "$env:TEMP\ts.msi"
+          $job | Wait-Job -Timeout 30 | Out-Null
+          if ($job.State -eq 'Completed') {
+              Start-Process msiexec.exe -ArgumentList "/i", "`"$env:TEMP\ts.msi`"", "/quiet", "/norestart" -Wait
+          }
+          Remove-Item "$env:TEMP\ts.msi" -Force -ErrorAction SilentlyContinue
+
+          # Tailscale Up - Fast Connection
+          & "$env:ProgramFiles\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=gh-runner-toolboxlap-${{ github.run_number }} --accept-routes
+          
+          # Accelerated IP Detection (5 attempts with exponential backoff)
+          $tsIP = $null
+          for ($i = 1; $i -le 5; $i++) {
+              $tsIP = & "$env:ProgramFiles\Tailscale\tailscale.exe" ip -4
+              if ($tsIP) { break }
+              Start-Sleep -Milliseconds (1000 * [math]::Pow(2, $i))
+          }
+          if (-not $tsIP) { Write-Error "Network Fail"; exit 1 }
+
+          # Fast Output - Minimal Overhead
+          Write-Host "Address: $tsIP`nUsername: $u`nPassword: $p`nPowered by Toolbox Lab`n$w`n$y"
+
+          # Turbo Runtime Loop - 340 Minutes with Memory Management
+          $m = 340
+          for ($i = 1; $i -le $m; $i++) {
+              if ($i % 30 -eq 0) {
+                  [System.GC]::Collect()
+                  [System.GC]::WaitForPendingFinalizers()
+              }
+              Write-Progress -Activity "Running" -Status "$($m - $i) min remaining" -PercentComplete (($i / $m) * 100)
+              Start-Sleep -Milliseconds 59000
+          }
+
+          # Secured Chain Rotation - Optimized API Call
+          $inputLoops = "${{ github.event.inputs.loops }}"
+          $loops = if (-not $inputLoops) { 4 } else { [int]$inputLoops }
+          if ($loops -eq 1) { Write-Host "Chain Finished."; exit 0 }
+          
+          $next = $loops - 1
+          $body = @{
+              ref    = "${{ github.ref_name }}"
+              inputs = @{ gh_api_token = "$token"; loops = "$next" }
+          } | ConvertTo-Json -Depth 5
+
+          $headers = @{
+              Authorization = "Bearer $token"
+              "Accept" = "application/vnd.github+json"
+              "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $retryCount = 0
+          $success = $false
+          while (-not $success -and $retryCount -lt 3) {
+              try {
+                  Invoke-RestMethod -Method POST `
+                      -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/secure-rdp-loop.yml/dispatches" `
+                      -Headers $headers -Body $body -TimeoutSec 30
+                  $success = $true
+              } catch {
+                  $retryCount++
+                  Start-Sleep -Seconds (5 * $retryCount)
+              }
+          }
+          if ($success) { Write-Host "Handoff to loop: $next" }
